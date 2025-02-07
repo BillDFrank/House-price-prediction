@@ -50,8 +50,7 @@ body, html {
   }
   
   main {
-    /* Fill the remaining vertical space */
-    min-height: calc(100vh - 120px); /* Adjust if header/footer height changes */
+    min-height: calc(100vh - 120px);
     display: flex;
     align-items: center;
     justify-content: center;
