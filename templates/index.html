@@ -1,17 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html>
+  <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real Estate Map</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; }
-        #map { height: 500px; width: 80%; margin: auto; }
-    </style>
-</head>
-<body>
-    <h1>Real Estate Advertisings</h1>
-    <div id="map">{{ map_html | safe }}</div>
-    <footer>© 2025 Real Estate</footer>
-</body>
+    <title>Imovirtual Apartment Prices</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  </head>
+  <body>
+    <header>
+      <div class="header-container">
+        <h1>Average Apartment Prices in Portugal</h1>
+        <nav>
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li>
+              <!-- GeoJSON Level Selector -->
+              <form id="geoForm" method="get" action="/">
+                <label for="level">GeoJSON Level:</label>
+                <select name="level" id="level" onchange="document.getElementById('geoForm').submit();">
+                  <option value="1">Level 1</option>
+                  <option value="2">Level 2</option>
+                  <option value="3">Level 3</option>
+                </select>
+              </form>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+    
+    <main>
+      <div class="map-container">
+        {{ map_div|safe }}
+      </div>
+    </main>
+    
+    <footer>
+      <div class="footer-container">
+        <p>&copy; 2025 Imovirtual Data Analysis. All rights reserved.</p>
+      </div>
+    </footer>
+  </body>
 </html>

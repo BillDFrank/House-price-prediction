@@ -1,0 +1,70 @@
+/* style.css */
+body, html {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    height: 100%;
+  }
+  
+  header {
+    background-color: #1976d2;
+    color: white;
+    padding: 10px 0;
+  }
+  
+  .header-container {
+    width: 90%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  header h1 {
+    margin: 0;
+    font-size: 1.5em;
+  }
+  
+  nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+  }
+  
+  nav ul li {
+    margin-left: 20px;
+  }
+  
+  nav ul li a {
+    color: white;
+    text-decoration: none;
+  }
+  
+  footer {
+    background-color: #424242;
+    color: white;
+    padding: 10px 0;
+    text-align: center;
+  }
+  
+  main {
+    /* Fill the remaining vertical space */
+    min-height: calc(100vh - 120px); /* Adjust if header/footer height changes */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .map-container {
+    width: 100%;
+    height: 100%;
+    max-height: calc(100vh - 120px);
+  }
+  
+  .map-container .plotly-graph-div {
+    width: 100% !important;
+    height: 100% !important;
+  }
+  
