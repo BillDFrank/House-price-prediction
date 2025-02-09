@@ -217,3 +217,60 @@ def send_dataframe_to_sql(df):
     finally:
         if 'engine' in locals():
             engine.dispose()
+
+
+def get_states_list():
+    """
+    Retrieve a DataFrame with all states from the 'state' table.
+    Expected columns: id, state_name
+    """
+    conn = connect_to_database()
+    if conn is None:
+        return pd.DataFrame()
+    query = "SELECT id, state_name FROM state"
+    try:
+        df_states = pd.read_sql(query, conn)
+    except Exception as e:
+        print("❌ Error retrieving states:", e)
+        df_states = pd.DataFrame()
+    finally:
+        conn.close()
+    return df_states
+
+
+def get_cities_list():
+    """
+    Retrieve a DataFrame with all cities from the 'city' table.
+    Expected columns: id, id_state, city_name
+    """
+    conn = connect_to_database()
+    if conn is None:
+        return pd.DataFrame()
+    query = "SELECT id, id_state, city_name FROM city"
+    try:
+        df_cities = pd.read_sql(query, conn)
+    except Exception as e:
+        print("❌ Error retrieving cities:", e)
+        df_cities = pd.DataFrame()
+    finally:
+        conn.close()
+    return df_cities
+
+
+def get_neighborhoods_list():
+    """
+    Retrieve a DataFrame with all neighborhoods from the 'neighborhood' table.
+    Expected columns: id, id_city, neighborhood_name
+    """
+    conn = connect_to_database()
+    if conn is None:
+        return pd.DataFrame()
+    query = "SELECT id, id_city, neighborhood_name FROM neighborhood"
+    try:
+        df_neighborhoods = pd.read_sql(query, conn)
+    except Exception as e:
+        print("❌ Error retrieving neighborhoods:", e)
+        df_neighborhoods = pd.DataFrame()
+    finally:
+        conn.close()
+    return df_neighborhoods
