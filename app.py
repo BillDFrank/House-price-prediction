@@ -57,12 +57,12 @@ def index():
         flash("Error retrieving data from the database: " + str(e))
         df = pd.DataFrame()
 
-    if df.empty:
-        flash("No data found in the database.")
-        data = []
-        latest_date = None
-    else:
-        # Clean the data
+    # Initialize variables.
+    latest_date = None
+    grouped = pd.DataFrame()
+
+    if not df.empty:
+        # Clean the data.
         df = clean_data(df)
         # 2. Select data with the latest scraped date.
         latest_date = df['date_scraped'].max()
@@ -76,41 +76,28 @@ def index():
             group_col = 'state'
             feature_key = 'properties.NAME_1'
             group_label = "State"
-            # Get complete list of states from the database.
-            df_locations = get_states_list()
-            df_locations.rename(columns={'state_name': 'state'}, inplace=True)
         elif level == '2':
             group_col = 'city'
             feature_key = 'properties.NAME_2'
             group_label = "City"
-            df_locations = get_cities_list()
-            df_locations.rename(columns={'city_name': 'city'}, inplace=True)
         elif level == '3':
             group_col = 'neighborhood'
             feature_key = 'properties.NAME_3'
             group_label = "Neighborhood"
-            df_locations = get_neighborhoods_list()
-            df_locations.rename(
-                columns={'neighborhood_name': 'neighborhood'}, inplace=True)
 
-        # Ensure scraped data has a non-null value in the grouping column.
+        # Remove rows with missing group data.
         df_latest = df_latest[df_latest[group_col].notna()]
-
         # Group scraped data and compute average price.
         grouped = df_latest.groupby(group_col)['price'].mean().reset_index()
         grouped.rename(columns={'price': 'avg_price'}, inplace=True)
         grouped['avg_price'] = grouped['avg_price'].round(2)
+    else:
+        flash("No data found in the database.")
 
-        # 4. Merge with the complete list of locations so that all locations appear.
-        # Make sure the complete list DataFrame has the same column name as group_col.
-        df_locations = df_locations[[group_col]].drop_duplicates()
-        merged = pd.merge(df_locations, grouped, on=group_col, how='left')
-        # Initialize missing prices with 0.
-        merged['avg_price'] = merged['avg_price'].fillna(0)
-        grouped = merged  # Use merged data for the map
-        data = grouped.to_dict(orient='records')
-
-    # 5. Determine which GeoJSON file to use based on level.
+    # 4. Determine which GeoJSON file to use based on level.
+    level = request.args.get('level', '1')
+    if level not in ['1', '2', '3']:
+        level = '1'
     geo_filename = f"gadm41_PRT_{level}.json"
     geojson_path = os.path.join(app.static_folder, 'geo', geo_filename)
     try:
@@ -120,18 +107,42 @@ def index():
         flash("Error loading GeoJSON file: " + str(e))
         geojson_data = {}
 
-    # 6. Create the choropleth map using Plotly Express.
+    # 5. Build a DataFrame from the GeoJSON file features.
+    # Extract the region name from each feature using the corresponding key.
+    geo_features = geojson_data.get("features", [])
+    geo_regions = []
+    # e.g., 'NAME_1', 'NAME_2', or 'NAME_3'
+    prop_key = feature_key.split(".")[-1]
+    for feature in geo_features:
+        props = feature.get("properties", {})
+        region_name = props.get(prop_key)
+        if region_name:
+            geo_regions.append(region_name)
+    df_geo = pd.DataFrame({group_col: geo_regions}).drop_duplicates()
+
+    # 6. Merge the complete list from the GeoJSON with the scraped data.
+    if not df_geo.empty:
+        if not grouped.empty:
+            merged = pd.merge(df_geo, grouped, on=group_col, how='left')
+        else:
+            merged = df_geo.copy()
+        # Initialize missing prices with 0.
+        merged['avg_price'] = merged['avg_price'].fillna(0)
+    else:
+        merged = pd.DataFrame({group_col: [], 'avg_price': []})
+
+    # 7. Create the choropleth map using Plotly Express.
     if latest_date:
         title = f"Average Apartment Prices by {group_label} (Data as of {latest_date.strftime('%Y-%m-%d')})"
     else:
         title = f"Average Apartment Prices by {group_label}"
     fig = px.choropleth(
-        data_frame=grouped,
+        data_frame=merged,
         geojson=geojson_data,
         locations=group_col,
         featureidkey=feature_key,
         color='avg_price',
-        color_continuous_scale="Plasma",  # You can change this color scale as desired
+        color_continuous_scale="Plasma",  # Change color scale as desired
         labels={'avg_price': 'Avg Price (€)'},
         title=title
     )
