@@ -142,7 +142,7 @@ def index():
         locations=group_col,
         featureidkey=feature_key,
         color='avg_price',
-        color_continuous_scale="Plasma",  # Change color scale as desired
+        color_continuous_scale="Viridis",
         labels={'avg_price': 'Avg Price (€)'},
         title=title
     )
